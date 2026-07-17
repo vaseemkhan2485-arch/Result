@@ -423,140 +423,350 @@
   });
 
   // ---------- Draw a sample result / score card onto canvas ----------
-  const resultCanvas = document.getElementById('resultCanvas');
-  const rctx = resultCanvas.getContext('2d');
+  (function() {
+    // 1. Create a style element for the exact layout structure
+    const style = document.createElement('style');
+    style.textContent = `
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 15px;
+            background: #fff;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .header-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .actions-bar {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .btn {
+            padding: 6px 15px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .btn-print { background-color: #d9534f; }
+        .btn-close { background-color: #00bcd4; }
+        
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #ccc;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        table.data-table th {
+            background-color: #f9f9f9;
+        }
+        .section-heading {
+            background-color: #f5f5f5;
+            text-align: center;
+            font-weight: bold;
+            padding: 6px;
+            border: 1px solid #ccc;
+        }
+        .photo-container {
+            text-align: center;
+        }
+        .photo-box {
+            width: 110px;
+            height: 130px;
+            border: 1px solid #999;
+            object-fit: cover;
+        }
+        .barcode-box {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+        }
+        .info-section {
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        .info-title {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info-list {
+            padding-left: 20px;
+            margin: 0 0 15px 0;
+        }
+        .info-list li {
+            margin-bottom: 4px;
+        }
+        .signature-area {
+            float: right;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .signature-img {
+            max-height: 40px;
+            display: block;
+            margin: 0 auto;
+        }
+        .clear { clear: both; }
+        .formula-box {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .formula-line {
+            display: inline-block;
+            border-bottom: 1px solid #000;
+            padding: 0 10px;
+        }
+    `;
+    document.head.appendChild(style);
 
-  function drawResultCard(){
-    const w = resultCanvas.width, h = resultCanvas.height;
-    rctx.clearRect(0,0,w,h);
+    // 2. Generate the layout template structures
+    const htmlContent = `
+        <div class="container">
+            <!-- Action Buttons -->
+            <div class="actions-bar">
+                <button class="btn btn-print" onclick="window.print()">Print</button>
+                <button class="btn btn-close">Close</button>
+            </div>
 
-    // background
-    rctx.fillStyle = "#ffffff";
-    rctx.fillRect(0,0,w,h);
+            <!-- Top Header Section -->
+            <table class="header-table">
+                <tr>
+                    <td style="width: 25%; text-align: left;">
+                        <strong>Department of Higher Education</strong><br>
+                        Ministry of Education<br>
+                        Government of India
+                    </td>
+                    <td class="header-title" style="width: 50%;">
+                        NATIONAL ELIGIBILITY CUM ENTRANCE TEST (UG) &ndash; 2026<br>
+                        Score Card
+                    </td>
+                    <td style="width: 25%; text-align: right;">
+                        <strong>राष्ट्रीय परीक्षा एजेंसी</strong><br>
+                        National Testing Agency<br>
+                        <strong>राष्ट्रीय आयुर्विज्ञान आयोग</strong><br>
+                        National Medical Commission
+                    </td>
+                </tr>
+            </table>
 
-    // border
-    rctx.strokeStyle = "#0b2447";
-    rctx.lineWidth = 6;
-    rctx.strokeRect(14,14,w-28,h-28);
+            <!-- Candidate Profile Grid -->
+            <table class="data-table">
+                <tr>
+                    <td style="width: 18%;"><strong>Roll Number</strong></td>
+                    <td style="width: 22%;">4413104136</td>
+                    <td style="width: 18%;"><strong>Application Number</strong></td>
+                    <td style="width: 22%;">260410023072</td>
+                    <td rowspan="4" style="width: 20%; text-align: center;">
+                        <img src="photo1.jpg" alt="Barcode" class="barcode-box">
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Candidate's Name</strong></td>
+                    <td colspan="3">WASEEM KHAN</td>
+                </tr>
+                <tr>
+                    <td><strong>Mother's Name</strong></td>
+                    <td>JARINA</td>
+                    <td><strong>Date of Birth (DD/MM/YYYY)</strong></td>
+                    <td>02/01/2008</td>
+                </tr>
+                <tr>
+                    <td><strong>Father's Name</strong></td>
+                    <td>AYYUB KHAN</td>
+                    <td><strong>Gender</strong></td>
+                    <td>Male</td>
+                </tr>
+                <tr>
+                    <td><strong>Person with benchmark disability</strong></td>
+                    <td>NO</td>
+                    <td><strong>Nationality</strong></td>
+                    <td>Indian</td>
+                    <td class="photo-container" style="border-top: none;">
+                        <img src="photo2.jpg" alt="Candidate Photograph" class="photo-box"><br>
+                        <span style="font-size: 8px; color: #666;">C7406E1C092BCBC1B5AA40CC405544B</span>
+                    </td>
+                </tr>
+            </table>
 
-    // header band
-    rctx.fillStyle = "#0b2447";
-    rctx.fillRect(14,14,w-28,110);
-    rctx.fillStyle = "#ffffff";
-    rctx.textAlign = "center";
-    rctx.font = "bold 26px Arial";
-    rctx.fillText("NEET (UG) 2026 — SCORE CARD", w/2, 60);
-    rctx.font = "15px Arial";
-    rctx.fillText("National Testing Agency  |  National Medical Commission", w/2, 92);
+            <!-- Performance Metrics Table -->
+            <div class="section-heading">Percentile obtained</div>
+            <table class="data-table" style="margin-top: -1px;">
+                <tr>
+                    <td style="width: 40%;"><strong>Biology (Botany & Zoology)</strong></td>
+                    <td>65.9018098</td>
+                </tr>
+                <tr>
+                    <td><strong>Chemistry</strong></td>
+                    <td>86.2992807</td>
+                </tr>
+                <tr>
+                    <td><strong>Physics</strong></td>
+                    <td>75.9478373</td>
+                </tr>
+                <tr>
+                    <td><strong>Percentile (Based on total marks obtained)</strong></td>
+                    <td>75.9126354</td>
+                </tr>
+                <tr>
+                    <td><strong>Percentile (Based on total marks obtained) in words</strong></td>
+                    <td>Seventy Five point Nine One Two Six Three Five Four Only</td>
+                </tr>
+                <tr>
+                    <td><strong>Total marks obtained (out of 720)</strong></td>
+                    <td>331</td>
+                </tr>
+                <tr>
+                    <td><strong>Total marks obtained (out of 720) in words</strong></td>
+                    <td>Three Hundred Thirty One Only</td>
+                </tr>
+            </table>
 
-    // photo placeholder box
-    rctx.strokeStyle = "#999";
-    rctx.lineWidth = 2;
-    rctx.strokeRect(60,150,150,180);
-    rctx.fillStyle = "#f1f3f6";
-    rctx.fillRect(62,152,146,176);
-    rctx.fillStyle = "#8a97a6";
-    rctx.font = "13px Arial";
-    rctx.fillText("PHOTO", 135, 245);
+            <!-- Ranking / Category Matrix -->
+            <table class="data-table">
+                <tr style="background-color: #f9f9f9; font-weight: bold;">
+                    <td style="width: 25%;">NEET All-India Rank</td>
+                    <td style="width: 35%;">Category</td>
+                    <td style="width: 15%;">Category rank</td>
+                    <td style="width: 10%;">PwBD</td>
+                    <td style="width: 15%;">Category-PwBD rank</td>
+                </tr>
+                <tr>
+                    <td>481580</td>
+                    <td>OBC- NCL (Central List)</td>
+                    <td>217557</td>
+                    <td>NO</td>
+                    <td>----</td>
+                </tr>
+            </table>
 
-    // candidate details
-    rctx.textAlign = "left";
-    rctx.fillStyle = "#1b2530";
-    rctx.font = "bold 18px Arial";
-    const details = [
-      ["Candidate Name", "WASEEM"],
-      ["Roll Number", "XXXXXXXXXX"],
-      ["Application Number", "XXXXXXXXXX"],
-      ["Date of Birth", "XX/XX/XXXX"],
-      ["Category", "General"],
-    ];
-    let dy = 175;
-    rctx.font = "14px Arial";
-    for(const [k,v] of details){
-      rctx.fillStyle = "#5c6b7a";
-      rctx.fillText(k + " :", 235, dy);
-      rctx.fillStyle = "#1b2530";
-      rctx.font = "bold 14px Arial";
-      rctx.fillText(v, 420, dy);
-      rctx.font = "14px Arial";
-      dy += 28;
-    }
+            <!-- Regulatory Guidelines & Cut-off Matrix -->
+            <div class="section-heading">Cut-off percentile and marks as per NMC/DCI/NCISM regulations</div>
+            <table class="data-table" style="margin-top: -1px; text-align: center; font-size: 11px;">
+                <tr style="background-color: #f9f9f9; font-weight: bold;">
+                    <td>Category</td>
+                    <td>Cut off percentile</td>
+                    <td>Cut off marks</td>
+                    <td>Number of candidates</td>
+                    <td>Category</td>
+                    <td>Cut off percentile</td>
+                    <td>Cut off marks</td>
+                    <td>Number of candidates</td>
+                </tr>
+                <tr>
+                    <td><strong>UR/EWS</strong></td>
+                    <td>50<sup>th</sup> Percentile</td>
+                    <td>715-213</td>
+                    <td>996935</td>
+                    <td><strong>UR/EWS-PwBD</strong></td>
+                    <td>45<sup>th</sup> Percentile</td>
+                    <td>212-194</td>
+                    <td>480</td>
+                </tr>
+                <tr>
+                    <td><strong>OBC</strong></td>
+                    <td>40<sup>th</sup> Percentile</td>
+                    <td>212-177</td>
+                    <td>81111</td>
+                    <td><strong>OBC-PwBD</strong></td>
+                    <td>40<sup>th</sup> Percentile</td>
+                    <td>193-177</td>
+                    <td>185</td>
+                </tr>
+                <tr>
+                    <td><strong>SC</strong></td>
+                    <td>40<sup>th</sup> Percentile</td>
+                    <td>212-177</td>
+                    <td>29947</td>
+                    <td><strong>SC-PwBD</strong></td>
+                    <td>40<sup>th</sup> Percentile</td>
+                    <td>193-177</td>
+                    <td>64</td>
+                </tr>
+                <tr>
+                    <td><strong>ST</strong></td>
+                    <td>40<sup>th</sup> Percentile</td>
+                    <td>212-177</td>
+                    <td>12452</td>
+                    <td><strong>ST-PwBD</strong></td>
+                    <td>40<sup>th</sup> Percentile</td>
+                    <td>191-178</td>
+                    <td>11</td>
+                </tr>
+            </table>
 
-    // scores table
-    let ty = 380;
-    rctx.fillStyle = "#0b2447";
-    rctx.fillRect(60, ty, w-120, 40);
-    rctx.fillStyle = "#fff";
-    rctx.font = "bold 15px Arial";
-    rctx.textAlign = "left";
-    rctx.fillText("Subject", 75, ty+26);
-    rctx.fillText("Marks Obtained", w-330, ty+26);
-    rctx.fillText("Max Marks", w-140, ty+26);
+            <!-- Declaration Dates & Verification Signature -->
+            <div style="margin-top: 15px;">
+                <div style="float: left; font-weight: bold;">
+                    DATE OF EXAM: 21 June 2026<br>
+                    DATE OF DECLARATION OF RESULT: 16.07.2026
+                </div>
+                <div class="signature-area">
+                    <span style="font-family: 'Courier New', monospace; font-style: italic; font-weight: bold; font-size: 16px;">Director Exams</span><br>
+                    <strong>Director (Exams), NTA</strong>
+                </div>
+                <div class="clear"></div>
+            </div>
 
-    const subjects = [
-      ["Physics", "142", "180"],
-      ["Chemistry", "138", "180"],
-      ["Botany", "160", "180"],
-      ["Zoology", "155", "180"],
-    ];
-    let ry = ty + 40;
-    rctx.font = "14px Arial";
-    subjects.forEach((row, i)=>{
-      rctx.fillStyle = i % 2 === 0 ? "#f6f8fa" : "#ffffff";
-      rctx.fillRect(60, ry, w-120, 38);
-      rctx.fillStyle = "#1b2530";
-      rctx.fillText(row[0], 75, ry+24);
-      rctx.fillText(row[1], w-300, ry+24);
-      rctx.fillText(row[2], w-130, ry+24);
-      ry += 38;
-    });
+            <!-- Crucial Candidate Directives -->
+            <div class="info-section">
+                <div class="info-title">IMPORTANT INFORMATION:</div>
+                <ol class="info-list">
+                    <li>Candidate particulars have been indicated as mentioned by her/him in the online Application Form, which is subject to verification by the admitting authorities. NTA does not change any particulars of the candidates post submission of application form.</li>
+                    <li>Candidate, if found submitting wrong information or tampering with this Score Card at any stage, will be considered as using unfair practices. NTA will cancel the candidature and take legal action as per the provision of Public Examinations (Prevention of Unfair Means) Act, 2024.</li>
+                    <li>Under the UR Category, the candidates from other categories i.e. General-EWS, OBC, SC, ST, and PwBD but meeting UR-cut off percentile are also included.</li>
+                    <li>In case of two or more candidates obtaining equal marks in NEET (UG) - 2026, the inter-se-merit of such candidates has been determined as per Chapter 8 {Point 2} of Information Bulletin of NEET (UG) -2026 to generate NEET All-India Rank.</li>
+                    <li>NTA has declared only NEET All-India Rank. Counselling authorities will invite applications from the successful candidates and prepare their own merit list as per their rules based on the All-India Rank. Candidates may apply to the designated counselling authorities as per their eligibility. NTA has no role to play in this exercise.</li>
+                    <li>Details of the various counselling authorities are given in Appendix II of the Information Bulletin. The same may also be confirmed from respective websites. Although, due care has been taken to put their correct addresses and contact details, NTA is not responsible for any changes therein.</li>
+                    <li>In the NEET (UG) – 2026 result, the category of the candidates is as per details submitted by them in the online application form. In case, if the category of candidate falls under any other category in the State category list, candidates may apply to designated Counselling Authorities with their category as per State Category List and designated Counselling Authorities will verify the same. The same is the case with domicile. Domicile will be governed by respective admitting authority rules.</li>
+                    <li>Qualified Candidates having Benchmark Disabilities may refer to Information Bulletin specifically Chapter 7. It may be noted that the eligibility in the examination under the category "Persons with Disability" is purely provisional to appear in the examination and does NOT guarantee a seat to the candidate under the respective category. The candidature for admission to MBBS program under PwBD category under various colleges will be governed as per relevant NMC guidelines.</li>
+                    <li>Qualifying in NEET (UG) - 2026 does not confer any right for admission to Medical/Dental Colleges. Selection of qualified candidates in NEET (UG) - 2026 for admission to Medical/Dental Colleges is subject to merit position and satisfying the admission criteria as laid down in the rules of the Central Government/State Government /Universities / Institutions concerned.</li>
+                    <li>Candidates are advised to preserve their score-card copy for any future reference.</li>
+                </ol>
 
-    // total row
-    rctx.fillStyle = "#e7f3ec";
-    rctx.fillRect(60, ry, w-120, 42);
-    rctx.font = "bold 15px Arial";
-    rctx.fillStyle = "#166b44";
-    rctx.fillText("TOTAL", 75, ry+27);
-    rctx.fillText("595", w-300, ry+27);
-    rctx.fillText("720", w-130, ry+27);
-    ry += 42;
+                <div style="font-weight: bold; margin-top: 10px;">Note:</div>
+                <ol class="info-list" style="list-style-type: decimal;">
+                    <li>Percentile are based on the relative performance of all those who appeared for the examination.</li>
+                    <li>The percentile of a candidate has been calculated as follows:
+                        <div class="formula-box">
+                            <span class="formula-line">100 X Number of candidates appeared in the examination with raw score LESS than the candidate</span><br>
+                            <span>Total number of candidates appeared in the examination</span>
+                        </div>
+                    </li>
+                    <li>The percentile is NOT the same as the percentage of marks obtained.</li>
+                    <li>Total percentile is NOT an aggregate or average of the percentile of individual subjects.</li>
+                </ol>
+            </div>
+        </div>
+    `;
 
-    // percentile / rank
-    ry += 40;
-    rctx.font = "14px Arial";
-    rctx.fillStyle = "#5c6b7a";
-    rctx.fillText("Percentile Score :", 75, ry);
-    rctx.fillStyle = "#1b2530";
-    rctx.font = "bold 14px Arial";
-    rctx.fillText("98.4521367", 260, ry);
-
-    ry += 30;
-    rctx.font = "14px Arial";
-    rctx.fillStyle = "#5c6b7a";
-    rctx.fillText("All India Rank :", 75, ry);
-    rctx.fillStyle = "#1b2530";
-    rctx.font = "bold 14px Arial";
-    rctx.fillText("14,532", 260, ry);
-
-    // footer disclaimer
-    rctx.font = "italic 12px Arial";
-    rctx.fillStyle = "#8a97a6";
-    rctx.textAlign = "center";
-    rctx.fillText("This is a sample/demo score card generated for preview purposes only.", w/2, h-40);
-  }
-
-  // ---------- Print ----------
-  document.getElementById('printBtn').addEventListener('click', ()=>{
-    window.print();
-  });
-
-  // ---------- Download ----------
-  document.getElementById('downloadBtn').addEventListener('click', ()=>{
-    const link = document.createElement('a');
-    link.download = 'NEET_2026_ScoreCard.png';
-    link.href = resultCanvas.toDataURL('image/png');
-    link.click();
-  });
+    // 3. Mount the structured component onto the DOM target
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = htmlContent;
+    document.body.appendChild(wrapper);
+})();
 </script>
 
 </body>
