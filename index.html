@@ -422,21 +422,23 @@
     if(e.target === overlay) overlay.classList.remove('show');
   });
 
-  // ---------- Draw a sample result / score card onto canvas ----------
-  (function() {
-    // 1. Create a style element for the exact layout structure
+  // ---------- Draw afunction drawResultCard() {
+    // Check if the result container already exists to avoid duplicate stacking on multiple clicks
+    if (document.getElementById('neet-scorecard-container')) {
+        return; 
+    }
+
+    // 1. Inject the structural stylesheet rules safely into the document head
     const style = document.createElement('style');
+    style.id = 'scorecard-inline-styles';
     style.textContent = `
-        body {
+        .scorecard-wrapper {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 20px auto;
             color: #333;
             font-size: 13px;
             line-height: 1.4;
-        }
-        .container {
             max-width: 1000px;
-            margin: 0 auto;
             border: 1px solid #ccc;
             padding: 15px;
             background: #fff;
@@ -523,8 +525,10 @@
             text-align: center;
             margin-top: 15px;
         }
-        .signature-img {
-            max-height: 40px;
+        .signature-box {
+            width: 150px;
+            height: 50px;
+            object-fit: contain;
             display: block;
             margin: 0 auto;
         }
@@ -540,15 +544,19 @@
             padding: 0 10px;
         }
     `;
-    document.head.appendChild(style);
+    
+    // Append styles only if they don't exist yet
+    if (!document.getElementById('scorecard-inline-styles')) {
+        document.head.appendChild(style);
+    }
 
-    // 2. Generate the layout template structures
+    // 2. Generate the dynamic HTML structural markup
     const htmlContent = `
-        <div class="container">
+        <div class="scorecard-wrapper" id="neet-scorecard-container">
             <!-- Action Buttons -->
             <div class="actions-bar">
                 <button class="btn btn-print" onclick="window.print()">Print</button>
-                <button class="btn btn-close">Close</button>
+                <button class="btn btn-close" onclick="document.getElementById('neet-scorecard-container').remove()">Close</button>
             </div>
 
             <!-- Top Header Section -->
@@ -724,7 +732,7 @@
                     DATE OF DECLARATION OF RESULT: 16.07.2026
                 </div>
                 <div class="signature-area">
-                    <span style="font-family: 'Courier New', monospace; font-style: italic; font-weight: bold; font-size: 16px;">Director Exams</span><br>
+                    <img src="photo3.jpg" alt="Director Signature" class="signature-box"><br>
                     <strong>Director (Exams), NTA</strong>
                 </div>
                 <div class="clear"></div>
@@ -762,11 +770,12 @@
         </div>
     `;
 
-    // 3. Mount the structured component onto the DOM target
+    // 3. Mount the layout container onto the DOM target safely inside the execution flow
     const wrapper = document.createElement('div');
     wrapper.innerHTML = htmlContent;
-    document.body.appendChild(wrapper);
-})();
+    document.body.appendChild(wrapper.firstChild);
+} sample result / score card onto canvas ----------
+  
 </script>
 
 </body>
