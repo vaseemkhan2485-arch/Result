@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEET (UG) 2026 — Score Card</title>
+<style>
+  :root{
+    --navy:#0b2447;
+    --navy-dark:#081a33;
+    --green:#1e8e5a;
+    --green-dark:#166b44;
+    --orange:#ff9933;
+    --paper:#ffffff;
+    --bg:#eef1f5;
+    --text:#1b2530;
+    --muted:#5c6b7a;
+    --border:#d7dde5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI", Tahoma, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .browser-bar{
+    background:#000;
+    color:#fff;
+    padding:10px 14px;
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .browser-bar .url{flex:1; opacity:.9;}
+  .header{
+    background:var(--paper);
+    padding:20px 16px 14px;
+    text-align:center;
+    border-bottom:4px solid var(--navy);
+  }
+  .header-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .emblem{
+    width:56px; height:56px;
+    border-radius:4px;
+    background:#ccc;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; color:#555;
+    flex-shrink:0;
+  }
+  .header h1{
+    font-size:18px;
+    margin:0 0 2px;
+    letter-spacing:.3px;
+  }
+  .header h2{
+    font-size:14px;
+    font-weight:500;
+    margin:0;
+    color:var(--muted);
+  }
+  .exam-title{
+    margin-top:14px;
+    font-size:19px;
+    font-weight:700;
+    color:var(--navy-dark);
+  }
+  .exam-sub{
+    font-size:14px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .agencies{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:22px;
+    margin-top:16px;
+    flex-wrap:wrap;
+  }
+  .agency{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .agency .dot{
+    width:34px;height:34px;border-radius:50%;
+    background:conic-gradient(var(--orange) 0 33%, #fff 33% 66%, var(--green) 66% 100%);
+    flex-shrink:0;
+  }
+  .agency .label b{display:block; font-size:12px;}
+  .agency .label span{font-size:10px; color:var(--muted);}
+  .navy-strip{ height:14px; background:var(--navy); }
+
+  .container{
+    max-width:460px;
+    margin:26px auto;
+    padding:0 16px;
+  }
+  .card{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:6px;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(11,36,71,.08);
+  }
+  .card-head{
+    background:var(--navy);
+    color:#fff;
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:17px;
+  }
+  .card-body{
+    padding:20px 18px 24px;
+  }
+  label{
+    font-size:13px;
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  label .hint{ color:var(--green); font-style:italic; font-size:12px;}
+  input[type=text]{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--border);
+    border-radius:4px;
+    font-size:15px;
+    margin-bottom:16px;
+  }
+  input[type=text]:focus{
+    outline:2px solid var(--navy);
+    outline-offset:1px;
+  }
+  .captcha-row{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  canvas#captchaCanvas{
+    border-radius:4px;
+    cursor:default;
+  }
+  .refresh-btn{
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:4px;
+    line-height:0;
+  }
+  .refresh-btn svg{ width:22px; height:22px; }
+  .submit-btn{
+    background:var(--green);
+    color:#fff;
+    border:none;
+    padding:12px 30px;
+    font-size:15px;
+    border-radius:4px;
+    cursor:pointer;
+    font-weight:600;
+    letter-spacing:.4px;
+  }
+  .submit-btn:hover{ background:var(--green-dark); }
+  .error-msg{
+    color:#c0392b;
+    font-size:13px;
+    margin:-8px 0 14px;
+    display:none;
+  }
+  .footer-note{
+    background:var(--navy);
+    color:#dbe4f0;
+    text-align:center;
+    font-size:13px;
+    line-height:1.6;
+    padding:20px 24px;
+    margin-top:28px;
+  }
+
+  /* Result modal */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(8,18,33,.72);
+    display:none;
+    align-items:flex-start;
+    justify-content:center;
+    padding:30px 14px;
+    overflow-y:auto;
+    z-index:50;
+  }
+  .overlay.show{ display:flex; }
+  .result-panel{
+    background:#fff;
+    max-width:440px;
+    width:100%;
+    border-radius:8px;
+    overflow:hidden;
+    animation:pop .25s ease;
+  }
+  @keyframes pop{
+    from{ transform:scale(.94); opacity:0; }
+    to{ transform:scale(1); opacity:1; }
+  }
+  .result-head{
+    background:var(--navy);
+    color:#fff;
+    padding:14px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:16px;
+  }
+  .result-head button{
+    background:none; border:none; color:#fff;
+    font-size:20px; cursor:pointer; line-height:1;
+  }
+  #resultCanvas{
+    display:block;
+    width:100%;
+    height:auto;
+    border-bottom:1px solid var(--border);
+  }
+  .result-actions{
+    display:flex;
+    gap:10px;
+    padding:16px 18px 20px;
+  }
+  .result-actions button{
+    flex:1;
+    padding:11px 0;
+    border:none;
+    border-radius:5px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .btn-print{ background:var(--navy); color:#fff; }
+  .btn-print:hover{ background:var(--navy-dark); }
+  .btn-download{ background:var(--green); color:#fff; }
+  .btn-download:hover{ background:var(--green-dark); }
+
+  @media print{
+    body *{ visibility:hidden; }
+    #resultCanvas, #resultCanvas *{ visibility:visible; }
+    #resultCanvas{
+      position:absolute; top:0; left:0; width:100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="browser-bar">
+    <span>✕</span><span>⌄</span>
+    <span class="url">examinationservices.nic.in</span>
+    <span>⋮</span>
+  </div>
+
+  <div class="header">
+    <div class="header-row">
+      <div class="emblem">Emblem</div>
+      <div>
+        <h1>Department of Higher Education</h1>
+        <h2>Ministry of Education · Government of India</h2>
+      </div>
+    </div>
+    <div class="exam-title">NATIONAL ELIGIBILITY CUM ENTRANCE TEST (UG) – 2026</div>
+    <div class="exam-sub">Score Card</div>
+
+    <div class="agencies">
+      <div class="agency">
+        <div class="dot"></div>
+        <div class="label"><b>National Testing Agency</b><span>Excellence in Assessment</span></div>
+      </div>
+      <div class="agency">
+        <div class="dot"></div>
+        <div class="label"><b>National Medical Commission</b><span>Regulatory Body</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="navy-strip"></div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-head">🔒 View Result</div>
+      <div class="card-body">
+        <form id="captchaForm" autocomplete="off">
+          <label>Enter CAPTCHA <span class="hint">(case sensitive)</span></label>
+          <input type="text" id="captchaInput" placeholder="" required>
+          <div class="error-msg" id="errorMsg">Incorrect CAPTCHA. Please try again.</div>
+
+          <label style="justify-content:flex-end;">CAPTCHA</label>
+          <div class="captcha-row">
+            <canvas id="captchaCanvas" width="150" height="46"></canvas>
+            <button type="button" class="refresh-btn" id="refreshBtn" title="Refresh CAPTCHA">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3aa859" stroke-width="2.4">
+                <path d="M20 11A8 8 0 1 0 6.6 17.4M20 11V5M20 11h-6"/>
+              </svg>
+            </button>
+          </div>
+
+          <button type="submit" class="submit-btn">SUBMIT</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    This site is designed and hosted by NIC PEP Division. The contents are provided by NTA.
+    For any further information, please contact NTA.
+  </div>
+
+  <!-- Result overlay -->
+  <div class="overlay" id="overlay">
+    <div class="result-panel">
+      <div class="result-head">
+        <span>Score Card</span>
+        <button id="closeBtn" aria-label="Close">✕</button>
+      </div>
+      <canvas id="resultCanvas" width="800" height="1000"></canvas>
+      <div class="result-actions">
+        <button class="btn-print" id="printBtn">🖶 Print</button>
+        <button class="btn-download" id="downloadBtn">⬇ Download</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ---------- CAPTCHA generation ----------
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let currentCaptcha = "";
+  const captchaCanvas = document.getElementById('captchaCanvas');
+  const ctx = captchaCanvas.getContext('2d');
+
+  function generateCaptchaText(len=6){
+    let s = "";
+    for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+    return s;
+  }
+
+  function drawCaptcha(){
+    currentCaptcha = generateCaptchaText();
+    const w = captchaCanvas.width, h = captchaCanvas.height;
+    ctx.clearRect(0,0,w,h);
+    // background
+    ctx.fillStyle = "#1b2b6b";
+    ctx.fillRect(0,0,w,h);
+    // noise lines
+    for(let i=0;i<6;i++){
+      ctx.strokeStyle = `rgba(255,255,255,${0.15+Math.random()*0.25})`;
+      ctx.beginPath();
+      ctx.moveTo(Math.random()*w, Math.random()*h);
+      ctx.lineTo(Math.random()*w, Math.random()*h);
+      ctx.stroke();
+    }
+    // text
+    ctx.font = "bold 26px Georgia, serif";
+    ctx.textBaseline = "middle";
+    let x = 12;
+    for(const ch of currentCaptcha){
+      ctx.save();
+      const yJit = h/2 + (Math.random()*10-5);
+      const rot = (Math.random()*0.4-0.2);
+      ctx.translate(x, yJit);
+      ctx.rotate(rot);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(ch, 0, 0);
+      ctx.restore();
+      x += 21;
+    }
+    // dots
+    for(let i=0;i<25;i++){
+      ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.4})`;
+      ctx.beginPath();
+      ctx.arc(Math.random()*w, Math.random()*h, 1.2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  drawCaptcha();
+  document.getElementById('refreshBtn').addEventListener('click', drawCaptcha);
+
+  // ---------- Form submit ----------
+  const form = document.getElementById('captchaForm');
+  const input = document.getElementById('captchaInput');
+  const errorMsg = document.getElementById('errorMsg');
+  const overlay = document.getElementById('overlay');
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(input.value === currentCaptcha){
+      errorMsg.style.display = "none";
+      drawResultCard();
+      overlay.classList.add('show');
+    } else {
+      errorMsg.style.display = "block";
+      drawCaptcha();
+      input.value = "";
+      input.focus();
+    }
+  });
+
+  document.getElementById('closeBtn').addEventListener('click', ()=>{
+    overlay.classList.remove('show');
+  });
+  overlay.addEventListener('click', (e)=>{
+    if(e.target === overlay) overlay.classList.remove('show');
+  });
+
+  // ---------- Draw a sample result / score card onto canvas ----------
+  const resultCanvas = document.getElementById('resultCanvas');
+  const rctx = resultCanvas.getContext('2d');
+
+  function drawResultCard(){
+    const w = resultCanvas.width, h = resultCanvas.height;
+    rctx.clearRect(0,0,w,h);
+
+    // background
+    rctx.fillStyle = "#ffffff";
+    rctx.fillRect(0,0,w,h);
+
+    // border
+    rctx.strokeStyle = "#0b2447";
+    rctx.lineWidth = 6;
+    rctx.strokeRect(14,14,w-28,h-28);
+
+    // header band
+    rctx.fillStyle = "#0b2447";
+    rctx.fillRect(14,14,w-28,110);
+    rctx.fillStyle = "#ffffff";
+    rctx.textAlign = "center";
+    rctx.font = "bold 26px Arial";
+    rctx.fillText("NEET (UG) 2026 — SCORE CARD", w/2, 60);
+    rctx.font = "15px Arial";
+    rctx.fillText("National Testing Agency  |  National Medical Commission", w/2, 92);
+
+    // photo placeholder box
+    rctx.strokeStyle = "#999";
+    rctx.lineWidth = 2;
+    rctx.strokeRect(60,150,150,180);
+    rctx.fillStyle = "#f1f3f6";
+    rctx.fillRect(62,152,146,176);
+    rctx.fillStyle = "#8a97a6";
+    rctx.font = "13px Arial";
+    rctx.fillText("PHOTO", 135, 245);
+
+    // candidate details
+    rctx.textAlign = "left";
+    rctx.fillStyle = "#1b2530";
+    rctx.font = "bold 18px Arial";
+    const details = [
+      ["Candidate Name", "WASEEM"],
+      ["Roll Number", "XXXXXXXXXX"],
+      ["Application Number", "XXXXXXXXXX"],
+      ["Date of Birth", "XX/XX/XXXX"],
+      ["Category", "General"],
+    ];
+    let dy = 175;
+    rctx.font = "14px Arial";
+    for(const [k,v] of details){
+      rctx.fillStyle = "#5c6b7a";
+      rctx.fillText(k + " :", 235, dy);
+      rctx.fillStyle = "#1b2530";
+      rctx.font = "bold 14px Arial";
+      rctx.fillText(v, 420, dy);
+      rctx.font = "14px Arial";
+      dy += 28;
+    }
+
+    // scores table
+    let ty = 380;
+    rctx.fillStyle = "#0b2447";
+    rctx.fillRect(60, ty, w-120, 40);
+    rctx.fillStyle = "#fff";
+    rctx.font = "bold 15px Arial";
+    rctx.textAlign = "left";
+    rctx.fillText("Subject", 75, ty+26);
+    rctx.fillText("Marks Obtained", w-330, ty+26);
+    rctx.fillText("Max Marks", w-140, ty+26);
+
+    const subjects = [
+      ["Physics", "142", "180"],
+      ["Chemistry", "138", "180"],
+      ["Botany", "160", "180"],
+      ["Zoology", "155", "180"],
+    ];
+    let ry = ty + 40;
+    rctx.font = "14px Arial";
+    subjects.forEach((row, i)=>{
+      rctx.fillStyle = i % 2 === 0 ? "#f6f8fa" : "#ffffff";
+      rctx.fillRect(60, ry, w-120, 38);
+      rctx.fillStyle = "#1b2530";
+      rctx.fillText(row[0], 75, ry+24);
+      rctx.fillText(row[1], w-300, ry+24);
+      rctx.fillText(row[2], w-130, ry+24);
+      ry += 38;
+    });
+
+    // total row
+    rctx.fillStyle = "#e7f3ec";
+    rctx.fillRect(60, ry, w-120, 42);
+    rctx.font = "bold 15px Arial";
+    rctx.fillStyle = "#166b44";
+    rctx.fillText("TOTAL", 75, ry+27);
+    rctx.fillText("595", w-300, ry+27);
+    rctx.fillText("720", w-130, ry+27);
+    ry += 42;
+
+    // percentile / rank
+    ry += 40;
+    rctx.font = "14px Arial";
+    rctx.fillStyle = "#5c6b7a";
+    rctx.fillText("Percentile Score :", 75, ry);
+    rctx.fillStyle = "#1b2530";
+    rctx.font = "bold 14px Arial";
+    rctx.fillText("98.4521367", 260, ry);
+
+    ry += 30;
+    rctx.font = "14px Arial";
+    rctx.fillStyle = "#5c6b7a";
+    rctx.fillText("All India Rank :", 75, ry);
+    rctx.fillStyle = "#1b2530";
+    rctx.font = "bold 14px Arial";
+    rctx.fillText("14,532", 260, ry);
+
+    // footer disclaimer
+    rctx.font = "italic 12px Arial";
+    rctx.fillStyle = "#8a97a6";
+    rctx.textAlign = "center";
+    rctx.fillText("This is a sample/demo score card generated for preview purposes only.", w/2, h-40);
+  }
+
+  // ---------- Print ----------
+  document.getElementById('printBtn').addEventListener('click', ()=>{
+    window.print();
+  });
+
+  // ---------- Download ----------
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const link = document.createElement('a');
+    link.download = 'NEET_2026_ScoreCard.png';
+    link.href = resultCanvas.toDataURL('image/png');
+    link.click();
+  });
+</script>
+
+</body>
+</html>
